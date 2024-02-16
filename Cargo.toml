@@ -11,4 +11,5 @@ ical = { version = "0.10.0", features = ["ical", "vcard"] }
 ics = "0.5.8"
 itertools = "0.12.1"
 log = "0.4.20"
+reqwest = "0.11.24"
 rocket = "0.5.0"
