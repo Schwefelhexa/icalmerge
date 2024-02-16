@@ -1,6 +1,8 @@
-use std::io::Cursor;
+use std::{env, io::Cursor};
 
 use ics::{properties::Name, ICalendar};
+use itertools::Itertools;
+use log::info;
 use rocket::{get, http::ContentType, launch, response::Responder, routes, Response};
 
 #[get("/")]
@@ -8,12 +10,16 @@ fn index() -> Cal<'static> {
     let mut cal = ICalendar::new("2.0", format!("-//Alexander Baron//iCal merge v{}//EN", env!("CARGO_PKG_VERSION")));
     cal.push(Name::new("Merged Calendar"));
 
+    let sources_raw = env::var("ICAL_SOURCES").unwrap_or_default();
+    let sources = sources_raw.split(',').collect_vec();
+    info!("Sources: {:?}", sources);
 
     Cal(cal)
 }
 
 #[launch]
 fn rocket() -> _ {
+    let _ = dotenvy::dotenv(); // Ignore faileure to load .env file
     rocket::build().mount("/", routes![index])
 }
 
