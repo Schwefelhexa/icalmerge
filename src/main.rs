@@ -1,7 +1,7 @@
 use std::{env, io::Cursor};
 
 use ical::IcalParser;
-use ics::{components::Property, properties::Name, ICalendar};
+use ics::{components::Property, properties::{Name, RRule}, Daylight, ICalendar, Standard, TimeZone};
 use itertools::Itertools;
 use rocket::{get, http::ContentType, launch, response::Responder, routes, Response};
 
@@ -15,6 +15,17 @@ async fn index() -> Cal<'static> {
         ),
     );
     output_calendar.push(Name::new("Merged Calendar"));
+
+    let mut tz = TimeZone::standard(
+            "Europe/Berlin",
+            Standard::new("19701025T030000", "+0200", "+0100"),
+        );
+    tz.push(RRule::new("FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU"));
+    let mut tz_daylight = Daylight::new("19700329T020000", "+0100", "+0200");
+    tz_daylight.push(RRule::new("FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU"));
+    tz.add_daylight(tz_daylight);
+    
+    output_calendar.add_timezone(tz);
 
     let sources_raw = env::var("ICAL_SOURCES").unwrap_or_default();
     let sources = sources_raw.split(',').collect_vec();
